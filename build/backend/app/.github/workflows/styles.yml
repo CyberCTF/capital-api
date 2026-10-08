@@ -1,0 +1,46 @@
+name: Styles
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint code
+
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    steps:
+      - uses: actions/checkout@ee0669bd1cc54295c223e0bb666b733df41de1c5 # v2.7.0
+      - name: Set up Python
+        uses: actions/setup-python@7f80679172b057fc5e90d70d197929d454754a5a # v2.3.2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: step-security/install-poetry@8cee588dbbc9ca4f2882c176ce61917303942193 # v1.4.2
+        with:
+          version: "1.1.12"
+          virtualenvs-in-project: true
+
+      - name: Set up cache
+        uses: actions/cache@8492260343ad570701412c2f464a5877dc76bace # v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Ensure cache is healthy
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: poetry run pip --version >/dev/null 2>&1 || rm -rf .venv
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run linters
+        run: poetry run ./scripts/lint

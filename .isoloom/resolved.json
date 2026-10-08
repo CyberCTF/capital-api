@@ -1,0 +1,402 @@
+{
+  "generated_by_isoloom": "from isoloom.yml; don't edit: change the spec and run `isoloom generate` (`isoloom check` fails when this file is out of date)",
+  "resolved_version": 1,
+  "name": "capital-api",
+  "instance": null,
+  "inputs": [],
+  "networks": {
+    "lab": {
+      "cidr": "10.60.202.0/24",
+      "docker_cidr": "10.60.202.0/24",
+      "internet": true,
+      "gateway": null,
+      "gateway_address": "10.60.202.1",
+      "router": null,
+      "controller": "10.60.202.253"
+    }
+  },
+  "reach": [],
+  "machines": {
+    "db": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.202.20"
+      },
+      "docker_addresses": {
+        "lab": "10.60.202.20"
+      },
+      "services": [
+        {
+          "port": 5432,
+          "name": "postgres",
+          "http": false,
+          "publish": null
+        }
+      ],
+      "depends_on": [],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 256,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": false
+    },
+    "redis": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.202.21"
+      },
+      "docker_addresses": {
+        "lab": "10.60.202.21"
+      },
+      "services": [
+        {
+          "port": 6379,
+          "name": "redis",
+          "http": false,
+          "publish": 6379
+        }
+      ],
+      "depends_on": [],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 128,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": false
+    },
+    "backend": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.202.10"
+      },
+      "docker_addresses": {
+        "lab": "10.60.202.10"
+      },
+      "services": [
+        {
+          "port": 8000,
+          "name": "api",
+          "http": true,
+          "publish": 8000
+        }
+      ],
+      "depends_on": [
+        "db"
+      ],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 512,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": false
+    },
+    "frontend": {
+      "access": false,
+      "supplied": false,
+      "shapes": [
+        "docker"
+      ],
+      "arch": "amd64",
+      "os": null,
+      "windows": false,
+      "addresses": {
+        "lab": "10.60.202.11"
+      },
+      "docker_addresses": {
+        "lab": "10.60.202.11"
+      },
+      "services": [
+        {
+          "port": 4100,
+          "name": "web",
+          "http": true,
+          "publish": 4100
+        }
+      ],
+      "depends_on": [
+        "backend"
+      ],
+      "inputs": [],
+      "volumes": {},
+      "resources": {
+        "cpus": 1,
+        "memory_mb": 1536,
+        "disk_gb": 20
+      },
+      "gateway_of": [],
+      "routes": [],
+      "default_gateway": null,
+      "offline": false
+    }
+  },
+  "start_order": [
+    "db",
+    "redis",
+    "backend",
+    "frontend"
+  ],
+  "clones": {},
+  "tools": {},
+  "groups": {},
+  "router": null,
+  "controller": {
+    "addresses": {
+      "lab": "10.60.202.253"
+    }
+  },
+  "published": [
+    {
+      "machine": "redis",
+      "port": 6379,
+      "host_port": 6379
+    },
+    {
+      "machine": "backend",
+      "port": 8000,
+      "host_port": 8000
+    },
+    {
+      "machine": "frontend",
+      "port": 4100,
+      "host_port": 4100
+    }
+  ],
+  "targets": {
+    "possible": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "generated": [
+      "docker",
+      "hosted",
+      "docker-vm",
+      "cloud-docker",
+      "kubernetes"
+    ],
+    "refused": {},
+    "not_possible": {
+      "hybrid": "only when some machines are containers and others are VMs",
+      "vagrant": "needs `vm:` on db, redis, backend, frontend",
+      "proxmox": "needs `vm:` on db, redis, backend, frontend",
+      "cloud-vm": "needs `vm:` on db, redis, backend, frontend",
+      "external": "needs `external:` on db, redis, backend, frontend"
+    }
+  },
+  "checks": {
+    "default_position": "networks",
+    "positions": [
+      {
+        "position": "networks",
+        "machine": null,
+        "runner": "isoloom-check",
+        "checks": [
+          {
+            "name": "the API docs answer",
+            "derived": false,
+            "kind": "http",
+            "target": "http://backend:8000/docs",
+            "expect": "200",
+            "wait": 180
+          },
+          {
+            "name": "the articles API answers",
+            "derived": false,
+            "kind": "http",
+            "target": "http://backend:8000/api/articles",
+            "expect": "200",
+            "wait": 30
+          },
+          {
+            "name": "the web front end answers",
+            "derived": false,
+            "kind": "http",
+            "target": "http://frontend:4100/",
+            "expect": "200",
+            "wait": 300
+          },
+          {
+            "name": "redis answers",
+            "derived": false,
+            "kind": "tcp",
+            "target": "redis:6379",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "checks/capital.sh",
+            "derived": false,
+            "kind": "script",
+            "target": "checks/capital.sh",
+            "expect": "",
+            "wait": 0
+          }
+        ]
+      },
+      {
+        "position": "db",
+        "machine": "db",
+        "runner": "isoloom-check-db",
+        "checks": [
+          {
+            "name": "redis:6379 from db",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.21:6379",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "backend:8000 from db",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.10:8000/",
+            "expect": "any",
+            "wait": 30
+          },
+          {
+            "name": "frontend:4100 from db",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.11:4100/",
+            "expect": "any",
+            "wait": 30
+          }
+        ]
+      },
+      {
+        "position": "redis",
+        "machine": "redis",
+        "runner": "isoloom-check-redis",
+        "checks": [
+          {
+            "name": "db:5432 from redis",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.20:5432",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "backend:8000 from redis",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.10:8000/",
+            "expect": "any",
+            "wait": 30
+          },
+          {
+            "name": "frontend:4100 from redis",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.11:4100/",
+            "expect": "any",
+            "wait": 30
+          }
+        ]
+      },
+      {
+        "position": "backend",
+        "machine": "backend",
+        "runner": "isoloom-check-backend",
+        "checks": [
+          {
+            "name": "db:5432 from backend",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.20:5432",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "redis:6379 from backend",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.21:6379",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "frontend:4100 from backend",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.11:4100/",
+            "expect": "any",
+            "wait": 30
+          }
+        ]
+      },
+      {
+        "position": "frontend",
+        "machine": "frontend",
+        "runner": "isoloom-check-frontend",
+        "checks": [
+          {
+            "name": "db:5432 from frontend",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.20:5432",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "redis:6379 from frontend",
+            "derived": true,
+            "kind": "tcp",
+            "target": "10.60.202.21:6379",
+            "expect": "open",
+            "wait": 30
+          },
+          {
+            "name": "backend:8000 from frontend",
+            "derived": true,
+            "kind": "http",
+            "target": "http://10.60.202.10:8000/",
+            "expect": "any",
+            "wait": 30
+          }
+        ]
+      }
+    ]
+  },
+  "message": "c{api}tal answers at http://localhost:4100/ (the blog) and\nits API at http://localhost:8000/api (specification at\n/docs). Ten challenges follow the OWASP API Security Top 10; each solved one returns a\nflag{...}. Start by registering a user and reading the API specification.\n"
+}

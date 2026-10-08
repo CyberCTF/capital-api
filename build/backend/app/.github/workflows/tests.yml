@@ -1,0 +1,66 @@
+name: Tests
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Run tests
+
+    runs-on: ubuntu-18.04
+
+    strategy:
+      matrix:
+        python-version: [3.9]
+
+    services:
+      postgres:
+        image: postgres:11.5-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+      - uses: actions/checkout@61b9e3751b92087fd0b06925ba6dd6314e06f089 # master
+
+      - name: Set up Python
+        uses: actions/setup-python@7f80679172b057fc5e90d70d197929d454754a5a # v2.3.2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: step-security/install-poetry@8cee588dbbc9ca4f2882c176ce61917303942193 # v1.4.2
+        with:
+          version: "1.1.12"
+          virtualenvs-in-project: true
+
+      - name: Set up cache
+        uses: actions/cache@8492260343ad570701412c2f464a5877dc76bace # v2
+        id: cache
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py-${{ matrix.python-version }}-poetry-${{ hashFiles('poetry.lock') }}
+
+      - name: Ensure cache is healthy
+        if: steps.cache.outputs.cache-hit == 'true'
+        run: poetry run pip --version >/dev/null 2>&1 || rm -rf .venv
+
+      - name: Install dependencies
+        run: poetry install --no-interaction
+
+      - name: Run tests
+        env:
+          SECRET_KEY: secret_key
+          DATABASE_URL: postgresql://postgres:postgres@localhost/postgres
+        run: |
+          poetry run alembic upgrade head
+          poetry run ./scripts/test
+
+      - name: Upload coverage to Codecov
+        uses: step-security/codecov-action@87e66f47a0f8ab4cae465a323eb9ec63d8b6b875 # v6.0.1

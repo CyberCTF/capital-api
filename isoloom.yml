@@ -1,0 +1,56 @@
+# yaml-language-server: $schema=https://www.isoloom.com/schema/v1.json
+# c{api}tal (by the Checkmarx research team): a vulnerable blogging API (FastAPI, React,
+# PostgreSQL, Redis) with ten challenges mapped to the OWASP API Security Top 10. Source:
+# https://github.com/Checkmarx/capital, vendored unchanged and split so each service sits in its
+# machine's build folder (build/backend/app/, build/frontend/app/, build/redis/app/), with the
+# environment of upstream's docker-compose.yml baked into the backend image.
+# `isoloom generate`, then `isoloom run docker`.
+version: 1
+name: capital-api
+
+networks:
+  lab: { cidr: 10.60.202.0/24 }
+
+machines:
+  db:
+    networks: { lab: 20 }
+    services: [{ port: 5432, name: postgres }]
+    resources: { cpus: 1, memory_mb: 256 }
+    docker:
+      image: postgres:11.5-alpine
+
+  redis:
+    networks: { lab: 21 }
+    services: [{ port: 6379, name: redis, publish: 6379 }]
+    resources: { cpus: 1, memory_mb: 128 }
+    docker:
+      build: build/redis/app
+
+  backend:
+    networks: { lab: 10 }
+    services: [{ port: 8000, name: api, http: true, publish: 8000 }]
+    resources: { cpus: 1, memory_mb: 512 }
+    depends_on: [db]
+    docker:
+      build: build/backend
+
+  frontend:
+    networks: { lab: 11 }
+    services: [{ port: 4100, name: web, http: true, publish: 4100 }]
+    resources: { cpus: 1, memory_mb: 1536 }
+    depends_on: [backend]
+    docker:
+      build: build/frontend
+
+checks:
+  - { name: the API docs answer, http: "http://backend:8000/docs", wait: 180 }
+  - { name: the articles API answers, http: "http://backend:8000/api/articles" }
+  - { name: the web front end answers, http: "http://frontend:4100/", wait: 300 }
+  - { name: redis answers, tcp: "redis:6379" }
+  - checks/capital.sh
+
+message: |
+  c{api}tal answers at http://localhost:{{ machines.frontend.services.0.publish }}/ (the blog) and
+  its API at http://localhost:{{ machines.backend.services.0.publish }}/api (specification at
+  /docs). Ten challenges follow the OWASP API Security Top 10; each solved one returns a
+  flag{...}. Start by registering a user and reading the API specification.

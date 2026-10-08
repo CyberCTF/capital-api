@@ -1,0 +1,9 @@
+{
+  "title": "c{api}tal",
+  "description": "A vulnerable blogging API by the Checkmarx research team, built with FastAPI, React, PostgreSQL and Redis, with ten challenges mapped to the OWASP API Security Top 10, from broken object level authorization to injection. Each solved challenge returns a flag.",
+  "question": "Solve the ten c{api}tal challenges and collect their flags.",
+  "category": "WEB",
+  "difficulty": 2,
+  "evidence_kind": "SECRET",
+  "capabilities": ["broken-object-level-authorization", "broken-authentication", "mass-assignment", "excessive-data-exposure", "api-injection", "security-misconfiguration"]
+}
