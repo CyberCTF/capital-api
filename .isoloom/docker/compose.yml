@@ -36,10 +36,15 @@ services:
           memory: 256M
     labels:
       isoloom.service.postgres: tcp:5432
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
     restart: unless-stopped
   redis:
     build:
       context: ../../build/redis/app
+      labels:
+        isoloom.managed: 'true'
+        isoloom.environment: capital-api
     image: isoloom/capital-api-redis
     platform: linux/amd64
     hostname: redis
@@ -71,10 +76,15 @@ services:
           memory: 128M
     labels:
       isoloom.service.redis: tcp:6379
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
     restart: unless-stopped
   backend:
     build:
       context: ../../build/backend
+      labels:
+        isoloom.managed: 'true'
+        isoloom.environment: capital-api
     image: isoloom/capital-api-backend
     platform: linux/amd64
     hostname: backend
@@ -108,10 +118,15 @@ services:
           memory: 512M
     labels:
       isoloom.service.api: http:8000
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
     restart: unless-stopped
   frontend:
     build:
       context: ../../build/frontend
+      labels:
+        isoloom.managed: 'true'
+        isoloom.environment: capital-api
     image: isoloom/capital-api-frontend
     platform: linux/amd64
     hostname: frontend
@@ -145,6 +160,8 @@ services:
           memory: 1536M
     labels:
       isoloom.service.web: http:4100
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
     restart: unless-stopped
   isoloom-check:
     image: curlimages/curl:8.11.1
@@ -167,6 +184,9 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
   isoloom-check-db:
     image: curlimages/curl:8.11.1
     profiles:
@@ -186,6 +206,9 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
   isoloom-check-redis:
     image: curlimages/curl:8.11.1
     profiles:
@@ -205,6 +228,9 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
   isoloom-check-backend:
     image: curlimages/curl:8.11.1
     profiles:
@@ -224,6 +250,9 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
   isoloom-check-frontend:
     image: curlimages/curl:8.11.1
     profiles:
@@ -243,6 +272,9 @@ services:
         condition: service_healthy
       frontend:
         condition: service_healthy
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
   isoloom-probe-amd64:
     image: busybox:1.37.0-musl
     platform: linux/amd64
@@ -254,11 +286,20 @@ services:
     - isoloom-probe-amd64:/probe
     network_mode: none
     restart: no
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
 networks:
   lab:
     ipam:
       config:
       - subnet: 10.60.202.0/24
         gateway: 10.60.202.1
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api
 volumes:
-  isoloom-probe-amd64: {}
+  isoloom-probe-amd64:
+    labels:
+      isoloom.managed: 'true'
+      isoloom.environment: capital-api

@@ -219,7 +219,8 @@
       "vagrant": "needs `vm:` on db, redis, backend, frontend",
       "proxmox": "needs `vm:` on db, redis, backend, frontend",
       "cloud-vm": "needs `vm:` on db, redis, backend, frontend",
-      "external": "needs `external:` on db, redis, backend, frontend"
+      "external": "needs `external:` on db, redis, backend, frontend",
+      "cloud-services": "left out by `targets:`"
     }
   },
   "checks": {
