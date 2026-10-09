@@ -4,6 +4,5 @@
   "question": "Solve the ten c{api}tal challenges and collect their flags.",
   "category": "WEB",
   "difficulty": 2,
-  "evidence_kind": "SECRET",
-  "capabilities": ["broken-object-level-authorization", "broken-authentication", "mass-assignment", "excessive-data-exposure", "api-injection", "security-misconfiguration"]
+  "evidence_kind": "SECRET"
 }
